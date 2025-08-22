@@ -17,33 +17,31 @@ import { Toaster } from "react-hot-toast";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import Modal from "@/components/Modal/Modal";
 
-import type { FetchNotesRes } from "@/lib/api";
-
 interface NotesClientProps {
-  initialData: FetchNotesRes;
   tag: string | undefined;
 }
 
-export default function NotesClient({ initialData, tag }: NotesClientProps) {
+export default function NotesClient({ tag }: NotesClientProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
   const [debouncedSearch] = useDebounce(search, 300);
 
   const { data, isLoading, isError, isSuccess } = useQuery({
-    queryKey: ["notes", debouncedSearch, page, tag],
+    queryKey: ["notes", { search: debouncedSearch, page, tag }],
     queryFn: () => fetchNotes(debouncedSearch, page, tag),
     placeholderData: keepPreviousData,
-    initialData: debouncedSearch === "" && page === 1 ? initialData : undefined,
   });
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
   const totalPages = data?.totalPages || 0;
+
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
   };
+
   const handlePageChange = (value: number) => {
     setPage(value);
   };

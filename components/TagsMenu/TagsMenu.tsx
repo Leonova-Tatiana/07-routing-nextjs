@@ -9,6 +9,7 @@ const tags = ["All", "Work", "Personal", "Meeting", "Shopping", "Todo"];
 const TagsMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
+
   return (
     <div className={css.menuContainer}>
       <button onClick={toggle} className={css.menuButton}>
@@ -20,7 +21,7 @@ const TagsMenu = () => {
             <li key={tag} className={css.menuItem}>
               <Link
                 onClick={toggle}
-                href={`/notes/filter/${tag === "All" ? "all" : tag}`}
+                href={`/notes/filter/${tag}`}
                 className={css.menuLink}
               >
                 {tag}
