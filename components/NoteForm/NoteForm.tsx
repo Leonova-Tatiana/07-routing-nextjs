@@ -1,3 +1,5 @@
+"use client";
+
 import { useId } from "react";
 import { Formik, Form, Field, ErrorMessage, type FormikHelpers } from "formik";
 import * as Yup from "yup";
@@ -28,7 +30,9 @@ const NoteFormSchema = Yup.object().shape({
     .min(3, "Title must be at least 3 characters")
     .max(50, "Title is too long")
     .required("Title is required"),
-  content: Yup.string().max(500, "Content is too long"),
+  content: Yup.string()
+    .min(3, "Content must be at least 3 characters")
+    .max(500, "Content is too long"),
   tag: Yup.string()
     .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag")
     .required("Tag is required"),
@@ -40,10 +44,6 @@ export default function NoteForm({ onClose }: NoteFormProps) {
 
   const { mutate, isPending } = useMutation({
     mutationFn: (newNote: CreateNote) => createNote(newNote),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      onClose();
-    },
     onError: () => {
       toast.error("Something went wrong...Try again, please");
     },
@@ -53,8 +53,15 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     values: NoteFormValues,
     actions: FormikHelpers<NoteFormValues>
   ) => {
-    mutate({ ...values });
-    actions.resetForm();
+    // onSuccess переносимо у пер-виклик mutate, щоб мати доступ до actions
+    mutate(values, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["notes"] });
+        toast.success("Note created successfully!");
+        actions.resetForm();
+        onClose();
+      },
+    });
   };
 
   return (
@@ -81,7 +88,7 @@ export default function NoteForm({ onClose }: NoteFormProps) {
             as="textarea"
             id={`${fieldId}-content`}
             name="content"
-            rows="8"
+            rows={8} // number, не string
             className={css.textarea}
           />
           <ErrorMessage name="content" component="span" className={css.error} />
